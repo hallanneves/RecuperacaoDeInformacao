@@ -15,6 +15,8 @@
         <!-- Jquary --> 
         <script src = "js/jquary.min.js"></script>
 
+        <script type="text/javascript" src="js/loader.js"></script>
+        
         <!-- Optional theme -->
         <link rel="stylesheet" href="css/home.css">
     <head>
@@ -70,7 +72,7 @@
 
                     // Conta todos os documentos que possuem alguma similaridade, ou seja, que foram retornados
                     foreach ($todos_documentos as $documento => $similaridade){
-                        if ($similaridade > 0){
+                        if ($similaridade > 0 || in_array($documento, $relevantes)){
                             $qtd_retornados++;
                         }
 
@@ -119,7 +121,7 @@
                         if ($similaridade > 0){
                             if (in_array($documento, $retornados_relevantes)){
                                 $relevantes++;
-                                $avg_precision += ($relevantes / $count);                                
+                                $avg_precision += ($relevantes / $count);
                             }
 
                             $count++;
@@ -148,6 +150,7 @@
 
                     $grafico[0] = array();
                     $grafico[0]['precision'] = 1;
+                    $grafico[0]['precision_normal'] = 1;
                     $grafico[0]['recall'] = 0;
 
                     foreach ($ranking_documentos as $documento => $similaridade){
@@ -159,26 +162,18 @@
                                 unset($nao_retornados_relevantes_parcial[array_search($documento, $nao_retornados_relevantes_parcial)]);
 
                                 $grafico[$count] = array();
-                                $grafico[$count]['precision'] = calculaPrecision($ranking_parcial, $retornados_relevantes);
+                                $grafico[$count]['precision'] = $grafico[$count]['precision_normal'] = calculaPrecision($ranking_parcial, $retornados_relevantes_parcial);
                                 $grafico[$count]['recall'] = calculaRecall($retornados_relevantes_parcial, $nao_retornados_relevantes_parcial);
     
-                                if ($count > 0){
-                                    if ($grafico[$count]['precision'] > $grafico[$count - 1]['precision']){
-                                        $grafico[$count - 1]['precision'] = $grafico[$count]['precision'];
-                                    }
-
-                                    $b_maior = $grafico[$count - 1]['precision'];
-                                    $b_menor = $grafico[$count]['precision'];
-                                    $h = $grafico[$count]['recall'] - $grafico[$count - 1]['recall'];
-    
-                                    $area += (($b_maior + $b_menor) * $h) / 2.0;
+                                $outro_count = $count - 1;
+                                while ($grafico[$count]['precision'] > $grafico[$outro_count]['precision'] && $outro_count > 0){
+                                    $grafico[$outro_count]['precision'] = $grafico[$count]['precision'];
+                                    $outro_count--;
                                 }
                             } else {
-                                if ($count > 0){
-                                    $grafico[$count] = array();
-                                    $grafico[$count]['precision'] = calculaPrecision($ranking_parcial, $retornados_relevantes);;
-                                    $grafico[$count]['recall'] = $grafico[$count - 1]['recall'];
-                                }
+                                $grafico[$count] = array();
+                                $grafico[$count]['precision'] = $grafico[$count]['precision_normal'] = calculaPrecision($ranking_parcial, $retornados_relevantes_parcial);;
+                                $grafico[$count]['recall'] = $grafico[$count - 1]['recall'];
                             }
                         } else {
                             break;
@@ -187,11 +182,95 @@
                         $count++;
                     }
 
-                    debug($grafico);
-                    echo "Área abaixo do gráfico: $area <br />";
+                    $result = "";
+                    $count = 0;
+                    foreach ($grafico as $indice => $map){
+                        $result .= "[" . $map['recall'] . ", " . $map['precision_normal'] . ", " . $map['precision'] ."],";
+                        
+                        if ($count > 0){
+                            $b_maior = $grafico[$count - 1]['precision_normal'];
+                            $b_menor = $grafico[$count]['precision_normal'];
+                            $h = $grafico[$count]['recall'] - $grafico[$count - 1]['recall'];
+                            $area += (($b_maior + $b_menor) * $h) / 2.0;
+                        }
+
+                        $count++;
+                    }
+
+                    echo substr($result, 0, -1);
+                    return $area;
                 }
 
+                // Funcao que calcula a area abaixo da curva (e da echo nas informacoes que devem ser usadas no grafico)
+                function plotaRecallPrecisionOnzePontos($ranking_documentos, $retornados_relevantes, $nao_retornados_relevantes){
+                    $ranking_parcial = array();
+                    $retornados_relevantes_parcial = array();
+                    $nao_retornados_relevantes_parcial = array_merge($retornados_relevantes, $nao_retornados_relevantes);
+                    $count = 1;
+                    $ponto = 0.1;
 
+                    $area = 0;
+                    $grafico = array();
+
+                    $grafico[0] = array();
+                    $grafico[0]['precision'] = 1;
+                    $grafico[0]['precision_normal'] = 1;
+                    $grafico[0]['recall'] = 0;
+
+                    foreach ($ranking_documentos as $documento => $similaridade){
+                        $ranking_parcial[$documento] = $similaridade;
+                        
+                        if (in_array($documento, $retornados_relevantes) || in_array($documento, $nao_retornados_relevantes)){
+                            array_push($retornados_relevantes_parcial, $documento);
+                            unset($nao_retornados_relevantes_parcial[array_search($documento, $nao_retornados_relevantes_parcial)]);
+                            
+                            if (calculaRecall($retornados_relevantes_parcial, $nao_retornados_relevantes_parcial) >= $ponto){
+                                $grafico[$count] = array();
+                                $grafico[$count]['precision'] = $grafico[$count]['precision_normal'] = calculaPrecision($ranking_parcial, $retornados_relevantes_parcial);
+                                $grafico[$count]['recall'] = calculaRecall($retornados_relevantes_parcial, $nao_retornados_relevantes_parcial);
+                                
+                                $outro_count = $count - 1;
+                                while ($grafico[$count]['precision'] > $grafico[$outro_count]['precision'] && $outro_count > 0){
+                                    $grafico[$outro_count]['precision'] = $grafico[$count]['precision'];
+                                    $outro_count--;
+                                }
+                                
+                                $count++;
+                                $ponto += 0.1;
+                            }
+                        } else {
+                            if (calculaRecall($retornados_relevantes_parcial, $nao_retornados_relevantes_parcial) >= $ponto){
+                                if ($count > 0){
+                                    $grafico[$count] = array();
+                                    $grafico[$count]['precision'] = $grafico[$count]['precision_normal'] = calculaPrecision($ranking_parcial, $retornados_relevantes_parcial);;
+                                    $grafico[$count]['recall'] = $grafico[$count - 1]['recall'];
+                                }
+
+                                $count++;
+                                $ponto += 0.1;
+                            }
+                        }
+
+                    }
+
+                    $result = "";
+                    $count = 0;
+                    foreach ($grafico as $indice => $map){
+                        $result .= "[" . $map['recall'] . ", " . $map['precision_normal'] . ", " . $map['precision'] ."],";
+
+                        if ($count > 0){
+                            $b_maior = $grafico[$count - 1]['precision'];
+                            $b_menor = $grafico[$count]['precision'];
+                            $h = $grafico[$count]['recall'] - $grafico[$count - 1]['recall'];
+                            $area += (($b_maior + $b_menor) * $h) / 2.0;
+                        }
+                        
+                        $count++;
+                    }
+
+                    echo substr($result, 0, -1);
+                    return $area;
+                }
 
                 // Chama o calculo do precision com ranking de documentos seguido de todos os documentos retornados que foram marcados como relevantes
                 $resultado_precision = calculaPrecision($_SESSION['indice_relevancia'], $_POST['documentos_retornados']);
@@ -207,7 +286,70 @@
                 $resultado_avg_precision = calculaAVGPrecision($_SESSION['indice_relevancia'], $_POST['documentos_retornados']);
                 echo "<h4>AVG Precision: $resultado_avg_precision</h4>";
 
-                plotaRecallPrecision($_SESSION['indice_relevancia'], $_POST['documentos_retornados'], $_POST['documentos_nao_retornados']);
+                // $area_onze_pontos = plotaRecallPrecisionOnzePontos($_SESSION['indice_relevancia'], $_POST['documentos_retornados'], $_POST['documentos_nao_retornados']);
+            ?>
+
+            <script type="text/javascript">
+                google.charts.load('current', {'packages':['corechart']});
+                google.charts.setOnLoadCallback(drawChart);
+
+                function drawChart() {
+                    var data = google.visualization.arrayToDataTable([
+                    ['Recall', 'Precision', 'Precision Interpolado'],
+                    
+                    <?php
+                        $area = plotaRecallPrecision($_SESSION['indice_relevancia'], $_POST['documentos_retornados'], $_POST['documentos_nao_retornados']);
+                    ?>
+
+                    ]);
+
+                    var options = {
+                    title: 'Curva Recall x Precision Interpolada',
+                    curveType: 'line',
+                    legend: { position: 'bottom' }
+                    };
+
+                    var chart = new google.visualization.LineChart(document.getElementById('curve_chart'));
+
+                    chart.draw(data, options);
+                }
+            </script>
+
+            <div id="curve_chart" style="width: 700px; height: 500px"></div>
+
+            <?php
+                echo "<h4>Área abaixo da curva: $area";
+            ?>
+
+            <script type="text/javascript">
+                google.charts.setOnLoadCallback(drawChart2);
+
+                function drawChart2() {
+                    var data = google.visualization.arrayToDataTable([
+                    ['Recall', 'Precision', 'Precision Interpolado'],
+                    
+                    <?php
+                        $area_onze_pontos = plotaRecallPrecisionOnzePontos($_SESSION['indice_relevancia'], $_POST['documentos_retornados'], $_POST['documentos_nao_retornados']);;
+                    ?>
+
+                    ]);
+
+                    var options = {
+                    title: 'Curva Recall x Precision Interpolada em 11 Pontos',
+                    curveType: 'line',
+                    legend: { position: 'bottom' }
+                    };
+
+                    var chart = new google.visualization.LineChart(document.getElementById('another_curver_chart'));
+
+                    chart.draw(data, options);
+                }
+            </script>
+
+            <div id="another_curver_chart" style="width: 700; height: 500px"></div>
+
+            <?php
+                echo "<h4>Área abaixo da curva: $area_onze_pontos";
             ?>
         </div>
     </body>
