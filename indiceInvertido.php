@@ -31,17 +31,17 @@
                                 <span class="icon-bar"></span>
                                 <span class="icon-bar"></span>
                             </button>
-                            <a class="navbar-brand" href="#">Recuperação de Informação</a>
+                            <a class="navbar-brand" href="index.php">Zehallan Search</a>
                         </div>
                         <div id="navbar" class="navbar-collapse collapse">
                             <ul class="nav navbar-nav">
                                 <li><a href="index.php">Pesquisa</a></li>
-                                <li><a href="indiceInvertido.php">Indice Invertido</a></li>
-                                <li><a href="vetorDeDocumentos.php">Vetor de documentos</a></li>
+                                <li><a href="indiceInvertido.php">Índice Invertido</a></li>
+                                <li><a href="vetorDeDocumentos.php">Modelo Vetorial</a></li>
                             </ul>
                             <ul class="nav navbar-nav navbar-right">
 
-                                <li><a href="reprocessar.php" onclick="alert('Regerando indices!');">Reprocessar</a></li>
+                                <li><a href="reprocessar.php" onclick="alert('Reprocessando os índices!');">Reprocessar</a></li>
                             </ul>
                         </div>
                     </div>
@@ -53,21 +53,23 @@
             <br>
             <br>
             <br>
+            
             <?php
-            require_once './utils.php';
-            ?>
+                require_once './utils.php';
+           ?>
+
             <div class="row">
                 <div class="col-md-10 col-lg-offset-1">
-                    <h2>Indice Invertido (Matrix de Frequência)</h2>
-                    <p>Os espaços em branco não são armazenados, essa é só uma forma representativa. Para armazenar estes dados é utilizada uma lista.</p>            
+                    <h2>Índice Invertido (Matriz de Frequência)</h2>
+                    <p>Os zeros não são armazenados. Os dados são armazenados em uma lista.</p>            
                     <table class="table table-bordered">
                         <thead>
                             <tr>
-                                <th>Palavras</th>
+                                <th>Termo</th>
                                 <?php
-                                foreach ($_SESSION['documentos'] as $nome_docmento => $palavras) {
-                                    echo "<th>$nome_docmento</th>";
-                                }
+                                    foreach ($_SESSION['documentos'] as $documento => $termo) {
+                                        echo "<th> $documento </th>";
+                                    }
                                 ?>
                             </tr>
                         </thead>
@@ -75,12 +77,13 @@
 
 
                             <?php
-                            foreach ($_SESSION['indice_invertido'] as $palavra => $documentos_palavra) {
+                            foreach ($_SESSION['indice_invertido'] as $termo => $documento_termo) {
                                 echo"<tr>";
-                                echo "<td>$palavra</td>";
+                                echo "<td>$termo</td>";
+
                                 foreach ($_SESSION['documentos'] as $nome_docmento => $pl) {
-                                    if (isset($documentos_palavra[$nome_docmento])) {
-                                        echo"<td>" . $documentos_palavra[$nome_docmento]['frequencia'] . "</td>";
+                                    if (isset($documento_termo[$nome_docmento])) {
+                                        echo"<td>" . $documento_termo[$nome_docmento]['frequencia'] . "</td>";
                                     } else {
                                         echo"<td>0</td>";
                                     }
@@ -90,17 +93,15 @@
                             }
                             ?>
                         </tbody>
-
                     </table>
                 </div>
                 <div class="row">
                     <div class="col-md-10 col-lg-offset-1">
-                        <h2>Indice Invertido (Lista)</h2>
-                        <p>Foi armazena a frequência por documento onde ocorre a palavra.</p>            
+                        <h2>Índice Invertido (Lista)</h2>
+                        <p>Armazena a frequência por documento que ocorre cada termo.</p>            
                         <?php
-                        debug($_SESSION['indice_invertido']);
+                            debug($_SESSION['indice_invertido']);
                         ?>
-                        </table>
                     </div>
                 </div>
             </div>
