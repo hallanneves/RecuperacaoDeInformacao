@@ -146,6 +146,7 @@
                     $count = 1;
 
                     $area = 0;
+                    $area_interpolada = 0;
                     $grafico = array();
 
                     $grafico[0] = array();
@@ -192,84 +193,69 @@
                             $b_menor = $grafico[$count]['precision_normal'];
                             $h = $grafico[$count]['recall'] - $grafico[$count - 1]['recall'];
                             $area += (($b_maior + $b_menor) * $h) / 2.0;
+
+                            $b_maior_interpolada = $grafico[$count - 1]['precision'];
+                            $b_menor_interpolada = $grafico[$count]['precision'];
+                            $h_interpolada = $grafico[$count]['recall'] - $grafico[$count - 1]['recall'];
+                            $area_interpolada += (($b_maior_interpolada + $b_menor_interpolada) * $h_interpolada) / 2.0;
                         }
 
                         $count++;
                     }
 
-                    echo substr($result, 0, -1);
-                    return $area;
-                }
+                    $grafico_e_area = array();
+                    $grafico_e_area['valores_grafico'] = $grafico;
+                    $grafico_e_area['grafico'] = substr($result, 0, -1);
+                    $grafico_e_area['area'] = $area;
+                    $grafico_e_area['area_interpolada'] = $area_interpolada;
 
-                // Funcao que calcula a area abaixo da curva (e da echo nas informacoes que devem ser usadas no grafico)
-                function plotaRecallPrecisionOnzePontos($ranking_documentos, $retornados_relevantes, $nao_retornados_relevantes){
-                    $ranking_parcial = array();
-                    $retornados_relevantes_parcial = array();
-                    $nao_retornados_relevantes_parcial = array_merge($retornados_relevantes, $nao_retornados_relevantes);
-                    $count = 1;
-                    $ponto = 0.1;
-
-                    $area = 0;
-                    $grafico = array();
-
-                    $grafico[0] = array();
-                    $grafico[0]['precision'] = 1;
-                    $grafico[0]['precision_normal'] = 1;
-                    $grafico[0]['recall'] = 0;
-
-                    foreach ($ranking_documentos as $documento => $similaridade){
-                        $ranking_parcial[$documento] = $similaridade;
-                        
-                        if (in_array($documento, $retornados_relevantes) || in_array($documento, $nao_retornados_relevantes)){
-                            array_push($retornados_relevantes_parcial, $documento);
-                            unset($nao_retornados_relevantes_parcial[array_search($documento, $nao_retornados_relevantes_parcial)]);
+                    $grafico_onze_pontos = array();
+                    $ponto = 0.0;
+                    foreach ($grafico_e_area['valores_grafico'] as $k => $valores) {
+                        while ($ponto <= $valores['recall']) {
+                            $grafico_onze_pontos["" . $ponto] = $valores['precision'];
                             
-                            if (calculaRecall($retornados_relevantes_parcial, $nao_retornados_relevantes_parcial) >= $ponto){
-                                $grafico[$count] = array();
-                                $grafico[$count]['precision'] = $grafico[$count]['precision_normal'] = calculaPrecision($ranking_parcial, $retornados_relevantes_parcial);
-                                $grafico[$count]['recall'] = calculaRecall($retornados_relevantes_parcial, $nao_retornados_relevantes_parcial);
-                                
-                                $outro_count = $count - 1;
-                                while ($grafico[$count]['precision'] > $grafico[$outro_count]['precision'] && $outro_count > 0){
-                                    $grafico[$outro_count]['precision'] = $grafico[$count]['precision'];
-                                    $outro_count--;
-                                }
-                                
-                                $count++;
-                                $ponto += 0.1;
+
+                            if ($ponto + 0.1 > 1.05){
+                                break;
                             }
-                        } else {
-                            if (calculaRecall($retornados_relevantes_parcial, $nao_retornados_relevantes_parcial) >= $ponto){
-                                if ($count > 0){
-                                    $grafico[$count] = array();
-                                    $grafico[$count]['precision'] = $grafico[$count]['precision_normal'] = calculaPrecision($ranking_parcial, $retornados_relevantes_parcial);;
-                                    $grafico[$count]['recall'] = $grafico[$count - 1]['recall'];
-                                }
 
-                                $count++;
-                                $ponto += 0.1;
-                            }
-                        }
-
-                    }
-
-                    $result = "";
-                    $count = 0;
-                    foreach ($grafico as $indice => $map){
-                        $result .= "[" . $map['recall'] . ", " . $map['precision_normal'] . ", " . $map['precision'] ."],";
-
-                        if ($count > 0){
-                            $b_maior = $grafico[$count - 1]['precision'];
-                            $b_menor = $grafico[$count]['precision'];
-                            $h = $grafico[$count]['recall'] - $grafico[$count - 1]['recall'];
-                            $area += (($b_maior + $b_menor) * $h) / 2.0;
+                            $ponto += 0.1;
                         }
                         
-                        $count++;
+                        if ($ponto + 0.1 > 1.05){
+                            break;
+                        }
                     }
 
-                    echo substr($result, 0, -1);
-                    return $area;
+                    if ($ponto < 0.95) {
+                        while ($ponto < 1.05){
+                            $grafico_onze_pontos["" . $ponto] = 0.0;
+                            $ponto += 0.1;
+                        }
+                    }
+                    
+                    $result_pontos = "";
+                    $count_pontos = 0;
+                    $area_pontos = 0.0;
+                    $anterior = 0.0;
+                    foreach ($grafico_onze_pontos as $rec => $prec){
+                        $result_pontos .= "[" .  $rec . ", " . $prec . "],";
+                        
+                        if ($count_pontos > 0){
+                            $b_maior_pontos = $prec;
+                            $b_menor_pontos = $anterior;
+                            $area_pontos += (($b_maior_pontos + $b_menor_pontos) * 0.1) / 2.0; // altura sempre vai ser 0.1
+                        }
+
+                        $anterior = $prec;
+                        $count_pontos++;
+                    }
+                    
+                    $grafico_e_area['grafico_onze_pontos'] = substr($result_pontos, 0, -1);
+                    $grafico_e_area['area_onze_pontos'] = $area_pontos;
+                    
+                    return $grafico_e_area;
                 }
 
                 // Chama o calculo do precision com ranking de documentos seguido de todos os documentos retornados que foram marcados como relevantes
@@ -286,7 +272,8 @@
                 $resultado_avg_precision = calculaAVGPrecision($_SESSION['indice_relevancia'], $_POST['documentos_retornados']);
                 echo "<h4>AVG Precision: $resultado_avg_precision</h4>";
 
-                // $area_onze_pontos = plotaRecallPrecisionOnzePontos($_SESSION['indice_relevancia'], $_POST['documentos_retornados'], $_POST['documentos_nao_retornados']);
+                $grafico_area = plotaRecallPrecision($_SESSION['indice_relevancia'], $_POST['documentos_retornados'], $_POST['documentos_nao_retornados']);
+
             ?>
 
             <script type="text/javascript">
@@ -298,15 +285,15 @@
                     ['Recall', 'Precision', 'Precision Interpolado'],
                     
                     <?php
-                        $area = plotaRecallPrecision($_SESSION['indice_relevancia'], $_POST['documentos_retornados'], $_POST['documentos_nao_retornados']);
+                        echo $grafico_area['grafico'];
                     ?>
 
                     ]);
 
                     var options = {
-                    title: 'Curva Recall x Precision Interpolada',
-                    curveType: 'line',
-                    legend: { position: 'bottom' }
+                        title: 'Curva Recall x Precision Interpolada',
+                        curveType: 'line',
+                        legend: { position: 'bottom' }
                     };
 
                     var chart = new google.visualization.LineChart(document.getElementById('curve_chart'));
@@ -315,10 +302,11 @@
                 }
             </script>
 
-            <div id="curve_chart" style="width: 700px; height: 500px"></div>
+            <div id="curve_chart" style="width: 600px; height: 400px"></div>
 
             <?php
-                echo "<h4>Área abaixo da curva: $area";
+                echo '<h4><font color="blue">Área: ' . number_format($grafico_area['area'], 2) . '</font></h4><br />';
+                echo '<h4><font color="red">Área: ' . number_format($grafico_area['area_interpolada'], 2) . '</font></h4><br />';
             ?>
 
             <script type="text/javascript">
@@ -326,16 +314,16 @@
 
                 function drawChart2() {
                     var data = google.visualization.arrayToDataTable([
-                    ['Recall', 'Precision', 'Precision Interpolado'],
+                    ['Recall', 'Precision'],
                     
                     <?php
-                        $area_onze_pontos = plotaRecallPrecisionOnzePontos($_SESSION['indice_relevancia'], $_POST['documentos_retornados'], $_POST['documentos_nao_retornados']);;
+                        echo $grafico_area['grafico_onze_pontos'];
                     ?>
 
                     ]);
 
                     var options = {
-                    title: 'Curva Recall x Precision Interpolada em 11 Pontos',
+                    title: 'Curva Recall x Precision - 11 Pontos',
                     curveType: 'line',
                     legend: { position: 'bottom' }
                     };
@@ -346,10 +334,10 @@
                 }
             </script>
 
-            <div id="another_curver_chart" style="width: 700; height: 500px"></div>
+            <div id="another_curver_chart" style="width: 600px; height: 400px"></div>
 
             <?php
-                echo "<h4>Área abaixo da curva: $area_onze_pontos";
+                echo '<h4>Área: ' . number_format($grafico_area['area_onze_pontos'], 2) . '</h4>';
             ?>
         </div>
     </body>

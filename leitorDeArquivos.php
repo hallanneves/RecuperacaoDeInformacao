@@ -39,3 +39,30 @@ function leStopWords($arquivo = "stopwords.txt"){
     }
     return $resultado_final;
 }
+
+function montaGrafo($dir = 'documentos'){
+    $files = scandir($dir);
+    $grafo = array();
+
+    foreach ($files as $ndoc => $arquivo) {
+        if ($ndoc > 1){
+            $conteudo = file_get_contents($dir."/".$arquivo);
+            $dom = new DOMDocument;
+
+            @$dom->loadHTML($conteudo);
+
+            $links = $dom->getElementsByTagName('a');
+            
+            foreach ($links as $link){
+                $destino = $link->getAttribute('href');
+
+                if (!isset($grafo['grafo'][$destino])){
+                    $grafo['grafo'][$destino] = array();
+                }
+                array_push($grafo['grafo'][$destino], $arquivo);
+            }
+        }
+    }
+
+    return $grafo;
+}

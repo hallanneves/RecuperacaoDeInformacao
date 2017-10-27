@@ -66,7 +66,7 @@
             foreach($indice_invertido_com_tf_idf as $palavra => $docs){
                 if(isset($indice_invertido_com_tf_idf[$palavra][$doc])){
                     $documentos_vetorial[$doc][$palavra] = ($indice_invertido_com_tf_idf[$palavra][$doc]['frequencia'] / $maior) * $indice_invertido_com_tf_idf[$palavra]['idf'];
-                }else{
+                } else{
                     $documentos_vetorial[$doc][$palavra] = 0;
                 }
             }

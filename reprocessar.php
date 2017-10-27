@@ -4,6 +4,8 @@
     require_once './processador.php';
 
     $_SESSION['documentos'] = $documentos = leDocumentos();
+    $_SESSION['grafo'] = montaGrafo();
+
     $stopwords = leStopWords();
 
     $_SESSION['indice_invertido'] = $indice_invertido = montaIndiceInvertido($documentos, $stopwords);
