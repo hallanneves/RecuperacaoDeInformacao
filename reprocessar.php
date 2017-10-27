@@ -2,9 +2,14 @@
     require_once './utils.php';
     require_once './leitorDeArquivos.php';
     require_once './processador.php';
+    require_once './pageRank.php';
 
     $_SESSION['documentos'] = $documentos = leDocumentos();
-    $_SESSION['grafo'] = montaGrafo();
+    $_SESSION['grafo'] = $grafo = montaGrafo();
+    $grafo_resultado = calculaPageRank($grafo);
+
+    $_SESSION['page_rank'] = $grafo_resultado['page_rank'];
+    $_SESSION['grafo'] = $grafo_resultado['grafo'];
 
     $stopwords = leStopWords();
 

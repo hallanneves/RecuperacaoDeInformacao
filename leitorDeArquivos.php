@@ -46,20 +46,29 @@ function montaGrafo($dir = 'documentos'){
 
     foreach ($files as $ndoc => $arquivo) {
         if ($ndoc > 1){
-            $conteudo = file_get_contents($dir."/".$arquivo);
+            $conteudo = file_get_contents($dir . "/" . $arquivo);
             $dom = new DOMDocument;
 
             @$dom->loadHTML($conteudo);
-
             $links = $dom->getElementsByTagName('a');
-            
+
+            if (!isset($grafo['grafo']['vindo'][$arquivo])){
+                $grafo['grafo']['vindo'][$arquivo] = array();
+            }
+
             foreach ($links as $link){
                 $destino = $link->getAttribute('href');
 
-                if (!isset($grafo['grafo'][$destino])){
-                    $grafo['grafo'][$destino] = array();
+                if (!isset($grafo['grafo']['vindo'][$destino])){
+                    $grafo['grafo']['vindo'][$destino] = array();
                 }
-                array_push($grafo['grafo'][$destino], $arquivo);
+
+                if (!isset($grafo['grafo']['saindo'][$arquivo])){
+                    $grafo['grafo']['saindo'][$arquivo] = array();
+                }
+
+                array_push($grafo['grafo']['vindo'][$destino], $arquivo);
+                array_push($grafo['grafo']['saindo'][$arquivo], $destino);
             }
         }
     }

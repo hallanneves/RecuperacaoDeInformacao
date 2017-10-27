@@ -41,6 +41,7 @@
                                 <li><a href="index.php">Pesquisa</a></li>
                                 <li><a href="indiceInvertido.php">Índice Invertido</a></li>
                                 <li><a href="vetorDeDocumentos.php">Modelo Vetorial</a></li>
+                                <li><a href="config.php">Configurações</a></li>
                             </ul>
                             <ul class="nav navbar-nav navbar-right">
 
@@ -92,19 +93,32 @@
                             echo "<h3>Documentos retornados pela consulta:</h3>";
                             foreach($_SESSION['indice_relevancia'] as $documento => $similaridade){
                                 if ($similaridade > 0){
-                                    echo '<h4><input type="checkbox" name="documentos_retornados[]" value="' . $documento . '"> <a href="documentos/' . $documento . '">' . $documento . '</a></h4>' . "<p>Similaridade = " . $similaridade. "</p>";
+                                    echo '<h4><input type="checkbox" name="documentos_retornados[]" value="' . $documento . '"> <a href="documentos/' . $documento . '">' . $documento . '</a></h4>' . "<p>Similaridade = " . $similaridade. "</p>" . "<p>PageRank = " . $_SESSION['page_rank'][$documento] . "</p>";
                                 }
                             }
 
                             echo "<h3>Outros documentos:</h3>";
                             foreach($_SESSION['indice_relevancia'] as $documento => $similaridade){
                                 if ($similaridade == 0){
-                                    echo '<h4><input type="checkbox" name="documentos_nao_retornados[]" value="' . $documento . '"> <a href="documentos/' . $documento . '">' . $documento . '</a></h4>' . "<p>Similaridade = " . $similaridade. "</p>";
+                                    echo '<h4><input type="checkbox" name="documentos_nao_retornados[]" value="' . $documento . '"> <a href="documentos/' . $documento . '">' . $documento . '</a></h4>' . "<p>Similaridade = " . $similaridade. "</p>" . "<p>PageRank = " . $_SESSION['page_rank'][$documento] . "</p>";
                                 }
                             }
 
                             echo '<input type="submit" name="submit" value="Marcar como relevante">';
                             echo '</form>';
+                        }
+
+                        echo "<h3>Estrutura do grafo:</h3>";
+                        if (isset($_SESSION['grafo'])){
+                            debug($_SESSION['grafo']);
+                        }
+
+                        if (isset($_SESSION['alpha'])){
+                            echo "<h4>Alfa:</h4> " . $_SESSION['alpha'];
+                        }
+
+                        if (isset($_SESSION['epsilon'])){
+                            echo "<h4>Epsilon:</h4> " . $_SESSION['epsilon'];
                         }
                     ?>
                 </div>

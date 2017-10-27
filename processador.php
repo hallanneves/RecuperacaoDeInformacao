@@ -87,7 +87,6 @@
             $documentos_TFIDF2[$doc] = sqrt($soma); 
         }
         
-        debug($documentos_TFIDF2);
         return $documentos_TFIDF2;
     }
 

@@ -15,10 +15,11 @@
         <!-- Jquary --> 
         <script src = "js/jquary.min.js" ></script>
 
-        <!-- Optional theme -->
-        <link rel="stylesheet" href="css/home.css">
     <head>
     <body>
+        <?php
+            require_once "utils.php";
+        ?>
         <div class="navbar-wrapper">
             <div class="container">
 
@@ -54,57 +55,35 @@
             <br>
             <br>
             <br>
-            
-            <?php
-                require_once './utils.php';
-           ?>
-
-            <div class="row">
-                <div class="col-md-10 col-lg-offset-1">
-                    <h2>Índice Invertido (Matriz de Frequência)</h2>
-                    <p>Os zeros não são armazenados. Os dados são armazenados em uma lista.</p>            
-                    <table class="table table-bordered">
-                        <thead>
-                            <tr>
-                                <th>Termo</th>
-                                <?php
-                                    foreach ($_SESSION['documentos'] as $documento => $termo) {
-                                        echo "<th> $documento </th>";
-                                    }
-                                ?>
-                            </tr>
-                        </thead>
-                        <tbody>
-
-
+            <div class="row ">
+                <div class="col-md-6 col-lg-offset-3">
+                    <form method="post" action="alteraEpsilon.php">
+                        <h2>Configurações</h2>
+                        <div class="input-group col-md-12">
                             <?php
-                            foreach ($_SESSION['indice_invertido'] as $termo => $documento_termo) {
-                                echo"<tr>";
-                                echo "<td>$termo</td>";
-
-                                foreach ($_SESSION['documentos'] as $nome_docmento => $pl) {
-                                    if (isset($documento_termo[$nome_docmento])) {
-                                        echo"<td>" . $documento_termo[$nome_docmento]['frequencia'] . "</td>";
-                                    } else {
-                                        echo"<td>0</td>";
-                                    }
-                                }
-
-                                echo"</tr>";
-                            }
+                                echo 'Epsilon: <input name="epsilon" type="text" class="form-control " placeholder="0.01" />';
                             ?>
-                        </tbody>
-                    </table>
-                </div>
-                <div class="row">
-                    <div class="col-md-10 col-lg-offset-1">
-                        <h2>Índice Invertido (Lista)</h2>
-                        <p>Armazena a frequência por documento que ocorre cada termo.</p>            
-                        <?php
-                            debug($_SESSION['indice_invertido']);
-                        ?>
-                    </div>
+                        </div>
+                        <br/>
+                        <div class="input-group col-md-12">
+                            <?php
+                                echo 'Alfa: <input name="alpha" type="text" class="form-control " placeholder="0.1" />';
+                            ?>
+                        </div>
+                        <div class="input-group col-md-12">
+                            <br/>
+                            <button class="btn btn-info " type="submit">Alterar</button>
+                        </div>
+                    </form>
                 </div>
             </div>
+            <div class="row">
+                <div class="col-md-10 col-md-offset-1">
+                    <?php
+
+                    ?>
+                </div>
+            </div>
+        </div>
     </body>
 </html>
