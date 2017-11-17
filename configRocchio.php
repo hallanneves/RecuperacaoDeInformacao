@@ -58,17 +58,23 @@
             <br> 
             <div class="row ">  
                 <div class="col-md-6 col-lg-offset-3">
-                    <form method="post" action="alteraEpsilon.php">
+                    <form method="post" action="alteraRocchio.php">
                         <h2>Configurações</h2>
                         <div class="input-group col-md-12">
                             <?php
-                                echo 'Epsilon: <input name="epsilon" type="text" class="form-control " placeholder="0.01" />';
+                                echo 'Alpha: <input name="roc_alpha" type="text" class="form-control " placeholder="1.0" />';
                             ?>
                         </div>
                         <br/>
                         <div class="input-group col-md-12">
                             <?php
-                                echo 'Alfa: <input name="alpha" type="text" class="form-control " placeholder="0.1" />';
+                                echo 'Beta: <input name="roc_beta" type="text" class="form-control " placeholder="0.75" />';
+                            ?>
+                        </div>
+                        <br/>
+                        <div class="input-group col-md-12">
+                            <?php
+                                echo 'Gama: <input name="roc_gama" type="text" class="form-control " placeholder="0.15" />';
                             ?>
                         </div>
                         <div class="input-group col-md-12">

@@ -36,9 +36,6 @@
         return $vetor;
     }
 
-    $pesquisa = processaPesquisa($_POST['pesquisa']);
-    $_SESSION['vetor_consulta'] = $vetor_consulta = criaVetorPesquisa($pesquisa,$alpha);
-
     function indice_relevancia($vetor_consulta){
         $vetor_consulta_quadrado = array();
         $raiz_soma_quadrado = 0;
@@ -77,8 +74,5 @@
         return $resultado;
     }
 
-    $_SESSION['indice_relevancia']= indice_relevancia($vetor_consulta);
-
-    header("Location:index.php?pesquisa=".$_POST['pesquisa']);
 
 ?>
