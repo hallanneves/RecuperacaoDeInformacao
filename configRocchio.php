@@ -13,12 +13,13 @@
         <script src="js/bootstrap.min.js"></script>
 
         <!-- Jquary --> 
-        <script src = "js/jquary.min.js"></script>
+        <script src = "js/jquary.min.js" ></script>
 
-        <!-- Optional theme -->
-        <link rel="stylesheet" href="css/home.css">
     <head>
     <body>
+        <?php
+            require_once "utils.php";
+        ?>
         <div class="navbar-wrapper">
             <div class="container">
 
@@ -38,13 +39,12 @@
                                 <li><a href="index.php">Pesquisa</a></li>
                                 <li><a href="indiceInvertido.php">Índice Invertido</a></li>
                                 <li><a href="vetorDeDocumentos.php">Modelo Vetorial</a></li>
-                                <li><a href="naiveBayes.php"> Naïve Bayes</a></li>
                                 <li><a href="config.php">Configurações</a></li>
                                 <li><a href="configRocchio.php">Rocchio</a></li>
                             </ul>
                             <ul class="nav navbar-nav navbar-right">
 
-                                <li><a href="reprocessar.php" onclick="alert('Regerando indices!');">Reprocessar</a></li>
+                                <li><a href="reprocessar.php" onclick="alert('Reprocessando os índices!');">Reprocessar</a></li>
                             </ul>
                         </div>
                     </div>
@@ -55,52 +55,42 @@
             <br>
             <br>
             <br>
-            <br>
-            <?php
-            require_once './utils.php';
-            ?>
-            <div class="row">
-                <div class="col-md-10 col-lg-offset-1">
-                    <h2>Modelo Vetorial</h2>
-                    <p>Cada coluna representa um documento no modelo vetorial.</p>            
-                    <table class="table table-bordered">
-                        <thead>
-                            <tr>
-                                <th>Palavras</th>
-                                <?php
-                                foreach ($_SESSION['documentos'] as $nome_docmento => $palavras) {
-                                    echo "<th>$nome_docmento</th>";
-                                }
-                                ?>
-                            </tr>
-                        </thead>
-                        <tbody>
+            <br> 
+            <div class="row ">  
+                <div class="col-md-6 col-lg-offset-3">
+                    <form method="post" action="alteraRocchio.php">
+                        <h2>Configurações</h2>
+                        <div class="input-group col-md-12">
                             <?php
-                                foreach ($_SESSION['indice_invertido'] as $palavra => $documentos_palavra) {
-                                    echo"<tr>";
-                                    echo "<td>$palavra</td>";
-                                    
-                                    foreach ($_SESSION['documentos'] as $nome_docmento => $pl) {
-                                        echo"<td>" . $_SESSION['documento_vetorial'][$nome_docmento][$palavra] . "</td>";
-                                    }
-
-                                    echo"</tr>";
-                                }
+                                echo 'Alpha: <input name="roc_alpha" type="text" class="form-control " placeholder="1.0" />';
                             ?>
-                        </tbody>
-
-                    </table>
-                </div>
-                <div class="row">
-                    <div class="col-md-10 col-lg-offset-1">
-                        <h2>Modelo Vetorial (Lista)</h2>
-                        <p>Exemplo de como cada documento é armazenado internamente.</p>            
-                        <?php
-                            debug($_SESSION['documento_vetorial']);
-                        ?>
-                        </table>
-                    </div>
+                        </div>
+                        <br/>
+                        <div class="input-group col-md-12">
+                            <?php
+                                echo 'Beta: <input name="roc_beta" type="text" class="form-control " placeholder="0.75" />';
+                            ?>
+                        </div>
+                        <br/>
+                        <div class="input-group col-md-12">
+                            <?php
+                                echo 'Gama: <input name="roc_gama" type="text" class="form-control " placeholder="0.15" />';
+                            ?>
+                        </div>
+                        <div class="input-group col-md-12">
+                            <br/>
+                            <button class="btn btn-info " type="submit">Alterar</button>
+                        </div>
+                    </form>
                 </div>
             </div>
+            <div class="row">
+                <div class="col-md-10 col-md-offset-1">
+                    <?php
+
+                    ?>
+                </div>
+            </div>
+        </div>
     </body>
 </html>

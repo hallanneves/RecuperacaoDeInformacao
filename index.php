@@ -43,6 +43,7 @@
                                 <li><a href="vetorDeDocumentos.php">Modelo Vetorial</a></li>
                                 <li><a href="naiveBayes.php"> Naïve Bayes</a></li>
                                 <li><a href="config.php">Configurações</a></li>
+                                <li><a href="configRocchio.php">Rocchio</a></li>
                             </ul>
                             <ul class="nav navbar-nav navbar-right">
 
@@ -60,7 +61,7 @@
             <br>
             <div class="row text-center">
                 <div class="col-md-6 col-lg-offset-3">
-                    <form method="post" action="pesquisa.php">
+                    <form method="post" action="realizaPesquisa.php">
                         <h2>Zehallan Search</h2>
                         <div id="custom-search-input">
                             <div class="input-group col-md-12">

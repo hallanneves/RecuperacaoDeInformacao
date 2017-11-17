@@ -43,7 +43,6 @@
                                 <li><a href="config.php">Configurações</a></li>
                             </ul>
                             <ul class="nav navbar-nav navbar-right">
-
                                 <li><a href="reprocessar.php" onclick="alert('Regerando indices!');">Reprocessar</a></li>
                             </ul>
                         </div>
@@ -58,6 +57,7 @@
             <br>
             <?php
                 require_once "utils.php";
+                require_once "pesquisa.php";
 
                 if (!isset($_POST['documentos_retornados'])){
                     $_POST['documentos_retornados'] = array();
@@ -260,6 +260,72 @@
                     return $grafico_e_area;
                 }
 
+                // Função que calcula os centroides dos documentos relevantes e nao relevantes e a nova consulta
+                function calculaRocchio($consulta_inicial, $documentos_relevantes, $documentos_modelo_vetorial){
+                    $roc_alpha = $_SESSION['roc_alpha'] ?? 1.0;
+                    $roc_beta = $_SESSION['roc_beta'] ?? 0.75;
+                    $roc_gama = $_SESSION['roc_gama'] ?? 0.15;
+
+                    $centroide_relevantes = array();
+                    $contador_relevantes = 0;
+
+                    $centroide_nao_relevantes = array();
+                    $contador_nao_relevantes = 0;
+
+                    foreach ($documentos_modelo_vetorial as $doc => $map) {
+                        // Se o documento foi marcado como relevante
+                        if (in_array($doc, $documentos_relevantes)){
+                            // Adiciona o vetor ao centroide dos relevantes
+                            foreach ($map as $word => $value){
+                                if (isset($centroide_relevantes[$word])){
+                                    $centroide_relevantes[$word] += $value;
+                                } else {
+                                    $centroide_relevantes[$word] = $value;
+                                }
+                            }
+
+                            $contador_relevantes++;
+                        } else {
+                            // Senao adiciona no centroide de nao relevantes
+                            foreach ($map as $word => $value){
+                                if (isset($centroide_nao_relevantes[$word])){
+                                    $centroide_nao_relevantes[$word] += $value;
+                                } else {
+                                    $centroide_nao_relevantes[$word] = $value;
+                                }
+                            }
+
+                            $contador_nao_relevantes++;
+                        }
+                    }
+                    
+                    // Divide todas as dimensoes dos centroides pelo numero de documentos relevantes e nao relevantes
+                    foreach ($centroide_relevantes as $palavra => $valor) {
+                        $centroide_relevantes[$palavra] /= $contador_relevantes;
+                    }
+
+                    foreach ($centroide_nao_relevantes as $palavra => $valor) {
+                        $centroide_nao_relevantes[$palavra] /= $contador_nao_relevantes;
+                    }
+
+                    $nova_consulta = array();
+
+                    // Encontra a nova consulta
+                    foreach ($consulta_inicial as $palavra => $valor) {
+                        $nova_consulta[$palavra] = ($roc_alpha * $valor) + ($roc_beta * $centroide_relevantes[$palavra]) - ($roc_gama * $centroide_relevantes[$palavra]);
+                        if ($nova_consulta[$palavra] < 0){
+                            $nova_consulta[$palavra] = 0.0;
+                        }
+                    }
+
+                    $resultado = array();
+                    $resultado['centroide_relevantes'] = $centroide_relevantes;
+                    $resultado['centroide_nao_relevantes'] = $centroide_nao_relevantes;
+                    $resultado['nova_consulta'] = $nova_consulta;
+                    
+                    return $resultado;
+                }
+
                 // Chama o calculo do precision com ranking de documentos seguido de todos os documentos retornados que foram marcados como relevantes
                 $resultado_precision = calculaPrecision($_SESSION['indice_relevancia'], $_POST['documentos_retornados']);
                 echo "<h4>Precision: $resultado_precision</h4>";
@@ -276,6 +342,13 @@
 
                 $grafico_area = plotaRecallPrecision($_SESSION['indice_relevancia'], $_POST['documentos_retornados'], $_POST['documentos_nao_retornados']);
 
+                $documentos_roc_relevantes = array();
+                foreach ($_POST['documentos_retornados'] as $doc_ret){
+                    array_push($documentos_roc_relevantes, $doc_ret);
+                }
+
+                $rocchio = calculaRocchio($_SESSION['vetor_consulta'], $documentos_roc_relevantes, $_SESSION['documento_vetorial']);
+                $nova_ordem = indice_relevancia($rocchio['nova_consulta']);
             ?>
 
             <script type="text/javascript">
@@ -340,6 +413,24 @@
 
             <?php
                 echo '<h4>Área: ' . number_format($grafico_area['area_onze_pontos'], 2) . '</h4>';
+
+                echo "<h3>Classificação usando Rocchio:</h3>";
+
+                echo "<h3>Documentos retornados:</h3>";
+                foreach($nova_ordem as $documento => $similaridade){
+                    if ($similaridade > 0){
+                        echo '<h4><a href="documentos/' . $documento . '">' . $documento . '</a></h4>' . "<p>Similaridade = " . $similaridade. "</p>" . "<p>PageRank = " . $_SESSION['page_rank'][$documento] . "</p>";
+                    }
+                }
+
+                echo "<h3>Outros documentos:</h3>";
+                foreach($nova_ordem as $documento => $similaridade){
+                    if ($similaridade == 0){
+                        echo '<h4><a href="documentos/' . $documento . '">' . $documento . '</a></h4>' . "<p>Similaridade = " . $similaridade. "</p>" . "<p>PageRank = " . $_SESSION['page_rank'][$documento] . "</p>";
+                    }
+                }
+
+                debug($rocchio);
             ?>
         </div>
     </body>

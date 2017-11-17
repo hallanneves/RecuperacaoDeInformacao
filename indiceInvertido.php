@@ -40,6 +40,7 @@
                                 <li><a href="vetorDeDocumentos.php">Modelo Vetorial</a></li>
                                 <li><a href="naiveBayes.php"> Naïve Bayes</a></li>
                                 <li><a href="config.php">Configurações</a></li>
+                                <li><a href="configRocchio.php">Rocchio</a></li>
                             </ul>
                             <ul class="nav navbar-nav navbar-right">
 
@@ -76,8 +77,6 @@
                             </tr>
                         </thead>
                         <tbody>
-
-
                             <?php
                             foreach ($_SESSION['indice_invertido'] as $termo => $documento_termo) {
                                 echo"<tr>";

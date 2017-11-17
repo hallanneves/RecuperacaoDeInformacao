@@ -41,6 +41,7 @@
                                 <li><a href="vetorDeDocumentos.php">Modelo Vetorial</a></li>
                                 <li><a href="naiveBayes.php"> Naïve Bayes</a></li>
                                 <li><a href="config.php">Configurações</a></li>
+                                <li><a href="configRocchio.php">Rocchio</a></li>
                             </ul>
                             <ul class="nav navbar-nav navbar-right">
 
@@ -55,8 +56,8 @@
             <br>
             <br>
             <br>
-            <br>
-            <div class="row ">
+            <br> 
+            <div class="row ">  
                 <div class="col-md-6 col-lg-offset-3">
                     <form method="post" action="alteraEpsilon.php">
                         <h2>Configurações</h2>
