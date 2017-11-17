@@ -85,6 +85,8 @@
                         }
                         if(isset($_SESSION['treinamento'])){
                             debug($_SESSION['treinamento']);
+                        }else{
+                            header("Location: calculaNaiveBayes.php");
                         }
                     ?>
                 </div>
