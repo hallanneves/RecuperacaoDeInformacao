@@ -346,10 +346,6 @@
                     array_push($documentos_roc_relevantes, $doc_ret);
                 }
 
-                foreach ($_POST['documentos_nao_retornados'] as $doc_ret){
-                    array_push($documentos_roc_relevantes, $doc_ret);
-                }
-
                 $rocchio = calculaRocchio($_SESSION['vetor_consulta'], $documentos_roc_relevantes, $_SESSION['documento_vetorial']);
                 $nova_ordem = indice_relevancia($rocchio['nova_consulta']);
             ?>
