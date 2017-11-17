@@ -39,6 +39,7 @@
                                 <li><a href="index.php">Pesquisa</a></li>
                                 <li><a href="indiceInvertido.php">Índice Invertido</a></li>
                                 <li><a href="vetorDeDocumentos.php">Modelo Vetorial</a></li>
+                                <li><a href="naiveBayes.php"> Naïve Bayes</a></li>
                                 <li><a href="config.php">Configurações</a></li>
                             </ul>
                             <ul class="nav navbar-nav navbar-right">

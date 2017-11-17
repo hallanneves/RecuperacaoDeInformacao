@@ -19,6 +19,9 @@
         <link rel="stylesheet" href="css/home.css">
     <head>
     <body>
+        <?php
+            require_once "utils.php";
+        ?>
         <div class="navbar-wrapper">
             <div class="container">
 
@@ -55,57 +58,37 @@
             <br>
             <br>
             <br>
-            
-            <?php
-                require_once './utils.php';
-           ?>
-
-            <div class="row">
-                <div class="col-md-10 col-lg-offset-1">
-                    <h2>Índice Invertido (Matriz de Frequência)</h2>
-                    <p>Os zeros não são armazenados. Os dados são armazenados em uma lista.</p>            
-                    <table class="table table-bordered">
-                        <thead>
-                            <tr>
-                                <th>Termo</th>
+            <div class="row text-center">
+                <div class="col-md-6 col-lg-offset-3">
+                    <form method="post" action="calculaNaiveBayes.php">
+                        <h2>Naïve Bayes</h2>
+                        <div id="custom-search-input">
+                            <div class="input-group col-md-12">
                                 <?php
-                                    foreach ($_SESSION['documentos'] as $documento => $termo) {
-                                        echo "<th> $documento </th>";
-                                    }
+                                    echo '<input name="documento" type="text" class="form-control input-lg" placeholder="Documento" />';
                                 ?>
-                            </tr>
-                        </thead>
-                        <tbody>
-
-
-                            <?php
-                            foreach ($_SESSION['indice_invertido'] as $termo => $documento_termo) {
-                                echo"<tr>";
-                                echo "<td>$termo</td>";
-
-                                foreach ($_SESSION['documentos'] as $nome_docmento => $pl) {
-                                    if (isset($documento_termo[$nome_docmento])) {
-                                        echo"<td>" . $documento_termo[$nome_docmento]['frequencia'] . "</td>";
-                                    } else {
-                                        echo"<td>0</td>";
-                                    }
-                                }
-
-                                echo"</tr>";
-                            }
-                            ?>
-                        </tbody>
-                    </table>
-                </div>
-                <div class="row">
-                    <div class="col-md-10 col-lg-offset-1">
-                        <h2>Índice Invertido (Lista)</h2>
-                        <p>Armazena a frequência por documento que ocorre cada termo.</p>            
-                        <?php
-                            debug($_SESSION['indice_invertido']);
-                        ?>
-                    </div>
+                                <span class="input-group-btn">
+                                    <button class="btn btn-info btn-lg" type="submit">
+                                        <i class="glyphicon glyphicon-search"></i>
+                                    </button>
+                                </span>
+                            </div>
+                        </div>
+                    </form>
                 </div>
             </div>
+            <div class="row">
+                <div class="col-md-10 col-md-offset-1">
+                    <?php
+                        if(isset($_SESSION['multinomialNB'])){
+                            debug($_SESSION['multinomialNB']);
+                        }
+                        if(isset($_SESSION['treinamento'])){
+                            debug($_SESSION['treinamento']);
+                        }
+                    ?>
+                </div>
+            </div>
+        </div>
     </body>
 </html>
